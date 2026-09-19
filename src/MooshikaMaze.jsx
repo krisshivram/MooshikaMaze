@@ -324,6 +324,7 @@ export default function MooshikaMaze() {
       return {};
     }
   });
+  const [activeDpadDir, setActiveDpadDir] = useState(null);
 
   const canvasRef = useRef(null);
   const gameStateRef = useRef(null);
@@ -347,6 +348,47 @@ export default function MooshikaMaze() {
     entity.moveDuration = stepDuration / 1000;
     return true;
   };
+
+  const handleDpadDown = useCallback((e, dir) => {
+    e.preventDefault();
+    if (e.currentTarget && e.currentTarget.setPointerCapture) {
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    }
+    setActiveDpadDir(dir);
+    const state = gameStateRef.current;
+    if (!state || !state.running || state.paused) return;
+
+    if (state.heldOrder.indexOf(dir) === -1) {
+      state.heldOrder.push(dir);
+    }
+    state.bufferedDir = dir;
+    state.bufferedTime = performance.now();
+
+    try {
+      if (typeof navigator !== 'undefined' && navigator.vibrate) {
+        navigator.vibrate(15);
+      }
+    } catch (_) {}
+
+    const player = state.player;
+    if (player && !player.moving) {
+      const cellObj = state.cells[player.cell.r][player.cell.c];
+      if (canMove(cellObj, dir)) {
+        tryStartMove(player, state.size, state.cells, dir, state.level.playerStep);
+      }
+    }
+  }, []);
+
+  const handleDpadUp = useCallback((e, dir) => {
+    e.preventDefault();
+    setActiveDpadDir(prev => (prev === dir ? null : prev));
+    const state = gameStateRef.current;
+    if (!state) return;
+    const idx = state.heldOrder.indexOf(dir);
+    if (idx !== -1) {
+      state.heldOrder.splice(idx, 1);
+    }
+  }, []);
 
   const chooseBestDir = useCallback((cell) => {
     var state = gameStateRef.current;
@@ -993,8 +1035,81 @@ export default function MooshikaMaze() {
             )}
           </div>
 
+          {/* Bigger Lower-Center Mobile D-Pad Controls */}
+          <div className="dpad-container" aria-label="On-Screen Arrow Controls">
+            <div className="dpad-grid">
+              <div className="dpad-cell" />
+              <button
+                type="button"
+                className={`dpad-btn dpad-up ${activeDpadDir === 'N' ? 'active' : ''}`}
+                aria-label="Move Up"
+                onPointerDown={(e) => handleDpadDown(e, 'N')}
+                onPointerUp={(e) => handleDpadUp(e, 'N')}
+                onPointerCancel={(e) => handleDpadUp(e, 'N')}
+                onPointerLeave={(e) => handleDpadUp(e, 'N')}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 4l-8 8h5v8h6v-8h5z" />
+                </svg>
+              </button>
+              <div className="dpad-cell" />
+
+              <button
+                type="button"
+                className={`dpad-btn dpad-left ${activeDpadDir === 'W' ? 'active' : ''}`}
+                aria-label="Move Left"
+                onPointerDown={(e) => handleDpadDown(e, 'W')}
+                onPointerUp={(e) => handleDpadUp(e, 'W')}
+                onPointerCancel={(e) => handleDpadUp(e, 'W')}
+                onPointerLeave={(e) => handleDpadUp(e, 'W')}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M4 12l8-8v5h8v6h-8v5z" />
+                </svg>
+              </button>
+
+              <div className="dpad-center-hub" aria-hidden="true">
+                <span>🐭</span>
+              </div>
+
+              <button
+                type="button"
+                className={`dpad-btn dpad-right ${activeDpadDir === 'E' ? 'active' : ''}`}
+                aria-label="Move Right"
+                onPointerDown={(e) => handleDpadDown(e, 'E')}
+                onPointerUp={(e) => handleDpadUp(e, 'E')}
+                onPointerCancel={(e) => handleDpadUp(e, 'E')}
+                onPointerLeave={(e) => handleDpadUp(e, 'E')}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M20 12l-8-8v5h-8v6h8v5z" />
+                </svg>
+              </button>
+
+              <div className="dpad-cell" />
+              <button
+                type="button"
+                className={`dpad-btn dpad-down ${activeDpadDir === 'S' ? 'active' : ''}`}
+                aria-label="Move Down"
+                onPointerDown={(e) => handleDpadDown(e, 'S')}
+                onPointerUp={(e) => handleDpadUp(e, 'S')}
+                onPointerCancel={(e) => handleDpadUp(e, 'S')}
+                onPointerLeave={(e) => handleDpadUp(e, 'S')}
+                onContextMenu={(e) => e.preventDefault()}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 20l8-8h-5v-8h-6v8h-5z" />
+                </svg>
+              </button>
+              <div className="dpad-cell" />
+            </div>
+          </div>
+
           <div className="drag-hint">
-            👆 Touch and drag the mouse to steer it &nbsp;·&nbsp; or use <span className="kbd">Arrow keys</span> / <span className="kbd">WASD</span>
+            👆 Use the big arrow buttons &nbsp;·&nbsp; touch & drag &nbsp;·&nbsp; or <span className="kbd">WASD</span>
           </div>
 
           <div className="game-actions">
