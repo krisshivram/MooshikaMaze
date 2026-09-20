@@ -22,22 +22,30 @@
   -webkit-user-select: none;
 }
 
-body {
+html, body {
   background: var(--bg-deep);
   color: var(--cream);
   font-family: 'Poppins', sans-serif;
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  padding: 16px;
-  overflow-x: hidden;
+  padding: 10px;
 }
 
 .vahana-app,
 .mooshika-app {
   width: 100%;
-  max-width: 680px;
+  max-width: 760px;
   margin: 0 auto;
 }
 
@@ -274,6 +282,14 @@ footer.note {
 }
 
 /* ---------- Game Screen ---------- */
+#screen-game {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
 .hud {
   display: flex;
   align-items: center;
@@ -281,20 +297,24 @@ footer.note {
   background: var(--bg-panel);
   border: 1px solid var(--line);
   border-radius: 14px;
-  padding: 10px 16px;
-  margin-bottom: 14px;
-  flex-wrap: wrap;
-  gap: 10px;
+  padding: 8px 16px;
+  margin-bottom: 8px;
+  gap: 12px;
+  width: 100%;
+  max-width: min(600px, calc(100vh - 145px) + 16px);
+  box-sizing: border-box;
 }
 
 .hud .lvl-name {
   font-size: 14px;
   color: var(--marigold);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .hud .stat {
   text-align: center;
+  white-space: nowrap;
 }
 
 .hud .stat .label {
@@ -308,6 +328,9 @@ footer.note {
   font-weight: 700;
   color: var(--gold);
   font-family: 'Baloo 2', sans-serif;
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  min-width: 44px;
 }
 
 .hud .stat .value.timer-warn {
@@ -325,12 +348,13 @@ footer.note {
   border: 1px solid var(--line);
   color: var(--cream);
   border-radius: 10px;
-  padding: 8px 12px;
+  padding: 7px 12px;
   font-size: 13px;
   cursor: pointer;
   font-weight: 600;
   font-family: inherit;
   transition: background 0.15s ease;
+  white-space: nowrap;
 }
 
 .pause-btn:hover {
@@ -339,19 +363,24 @@ footer.note {
 
 .stage-wrap {
   position: relative;
-  border-radius: 18px;
-  padding: 10px;
+  border-radius: 16px;
+  padding: 8px;
   background: var(--bg-panel);
   border: 1px solid var(--line);
   box-shadow: var(--shadow);
   display: flex;
   justify-content: center;
+  align-items: center;
+  margin: 0 auto;
+  max-width: fit-content;
+  touch-action: none;
 }
 
 #mazeCanvas {
   width: 100%;
   height: auto;
-  max-width: 540px;
+  aspect-ratio: 1 / 1;
+  max-width: min(600px, 94vw, calc(100vh - 145px));
   display: block;
   border-radius: 10px;
   background: #170b06;
@@ -397,7 +426,7 @@ footer.note {
   text-align: center;
   color: var(--cream-dim);
   font-size: 13px;
-  margin: 10px 0 0;
+  margin: 8px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -429,12 +458,22 @@ footer.note {
 
 /* Shown ONLY on mobile and tablet devices */
 @media (max-width: 768px), (pointer: coarse) and (max-width: 1024px) {
+  #mazeCanvas {
+    max-width: min(92vw, calc(100vh - 340px), 390px);
+  }
+
+  .hud {
+    max-width: min(92vw, calc(100vh - 340px) + 16px, 406px);
+    padding: 6px 12px;
+    margin-bottom: 6px;
+  }
+
   .dpad-container {
     display: flex !important;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin: 14px auto 6px;
+    margin: 6px auto 2px;
     user-select: none;
     -webkit-user-select: none;
     -webkit-touch-callout: none;
@@ -456,29 +495,16 @@ footer.note {
     display: none !important;
   }
 
+  #mazeCanvas {
+    max-width: min(600px, 94vw, calc(100vh - 145px));
+  }
+
   .hint-desktop {
     display: inline !important;
   }
 
   .hint-mobile {
     display: none !important;
-  }
-}
-
-/* Laptop viewport height optimization to prevent vertical scrollbars */
-@media (min-width: 769px) and (max-height: 820px) {
-  #mazeCanvas {
-    max-width: min(480px, 60vh);
-  }
-  .hud {
-    padding: 6px 14px;
-    margin-bottom: 10px;
-  }
-  .stage-wrap {
-    padding: 8px;
-  }
-  .game-actions {
-    margin-top: 8px;
   }
 }
 
@@ -562,18 +588,18 @@ footer.note {
 
 @media (max-width: 480px) {
   .dpad-grid {
-    grid-template-columns: repeat(3, 66px);
-    grid-template-rows: repeat(3, 66px);
-    gap: 8px;
-    padding: 10px;
-    border-radius: 26px;
+    grid-template-columns: repeat(3, 62px);
+    grid-template-rows: repeat(3, 62px);
+    gap: 6px;
+    padding: 8px;
+    border-radius: 24px;
   }
   .dpad-btn {
-    border-radius: 18px;
+    border-radius: 16px;
   }
   .dpad-btn svg {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
   }
 }
 

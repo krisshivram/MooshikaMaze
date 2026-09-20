@@ -8,7 +8,7 @@ const LEVELS = [
   { key: "hard", name: "Grand Procession", subtitle: "Big, winding, and the cat means business.", stars: 3, size: 19, timer: 120, modaks: 30, playerStep: 115, catStep: 160, catMistake: 0.08 }
 ];
 
-const CELL_PX = 30;
+const CELL_PX = 36;
 const CATCH_DIST_FACTOR = 0.55;
 
 const DIR_VECTORS = {
@@ -522,10 +522,42 @@ export default function VahanaRush() {
       if (modakSpots.indexOf(shuffled[i]) === -1) modakSpots.push(shuffled[i]);
     }
 
+    // Pre-render static background (floor tiles + walls) onto offscreen canvas for 60fps performance
+    var bgCanvas = document.createElement('canvas');
+    bgCanvas.width = size * CELL_PX;
+    bgCanvas.height = size * CELL_PX;
+    var bgCtx = bgCanvas.getContext('2d');
+
+    // Floor checkerboard
+    for (var r = 0; r < size; r++) {
+      for (var c = 0; c < size; c++) {
+        bgCtx.fillStyle = ((r + c) % 2 === 0) ? "#241108" : "#2a1409";
+        bgCtx.fillRect(c * CELL_PX, r * CELL_PX, CELL_PX, CELL_PX);
+      }
+    }
+
+    // Walls
+    bgCtx.strokeStyle = "#ffc94a";
+    bgCtx.lineWidth = 2.8;
+    bgCtx.lineCap = "round";
+    bgCtx.beginPath();
+    for (let r = 0; r < size; r++) {
+      for (let c = 0; c < size; c++) {
+        const cell = cells[r][c];
+        const x0 = c * CELL_PX, y0 = r * CELL_PX, x1 = x0 + CELL_PX, y1 = y0 + CELL_PX;
+        if (cell.walls.N) { bgCtx.moveTo(x0, y0); bgCtx.lineTo(x1, y0); }
+        if (cell.walls.W) { bgCtx.moveTo(x0, y0); bgCtx.lineTo(x0, y1); }
+        if (r === size - 1 && cell.walls.S) { bgCtx.moveTo(x0, y1); bgCtx.lineTo(x1, y1); }
+        if (c === size - 1 && cell.walls.E) { bgCtx.moveTo(x1, y0); bgCtx.lineTo(x1, y1); }
+      }
+    }
+    bgCtx.stroke();
+
     gameStateRef.current = {
       level: level,
       cells: cells,
       size: size,
+      bgCanvas: bgCanvas,
       goal: goal,
       running: true,
       paused: false,
@@ -620,6 +652,15 @@ export default function VahanaRush() {
       state.dragOrigin = { x: pt.x, y: pt.y };
       state.dragCurrent = { x: pt.x, y: pt.y };
       state.lastMovePt = { x: pt.x, y: pt.y };
+
+      const player = state.player;
+      if (player && !player.moving) {
+        const cellObj = state.cells[player.cell.r][player.cell.c];
+        const dir = chooseBestDir(cellObj);
+        if (dir) {
+          tryStartMove(player, state.size, state.cells, dir, state.level.playerStep);
+        }
+      }
     };
 
     const handlePointerMove = (e) => {
@@ -643,7 +684,7 @@ export default function VahanaRush() {
         const dx = pt.x - state.dragOrigin.x;
         const dy = pt.y - state.dragOrigin.y;
         const dist = Math.hypot(dx, dy);
-        const maxLeash = 16;
+        const maxLeash = 18;
         if (dist > maxLeash) {
           state.dragOrigin.x = pt.x - (dx / dist) * maxLeash;
           state.dragOrigin.y = pt.y - (dy / dist) * maxLeash;
@@ -653,9 +694,17 @@ export default function VahanaRush() {
       if (state.dragOrigin && state.dragCurrent) {
         const dx = state.dragCurrent.x - state.dragOrigin.x;
         const dy = state.dragCurrent.y - state.dragOrigin.y;
-        if (Math.hypot(dx, dy) >= 6) {
+        if (Math.hypot(dx, dy) >= 5) {
           state.bufferedDir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "E" : "W") : (dy > 0 ? "S" : "N");
           state.bufferedTime = performance.now();
+
+          const player = state.player;
+          if (player && !player.moving) {
+            const cellObj = state.cells[player.cell.r][player.cell.c];
+            if (canMove(cellObj, state.bufferedDir)) {
+              tryStartMove(player, state.size, state.cells, state.bufferedDir, state.level.playerStep);
+            }
+          }
         }
       }
     };
@@ -665,7 +714,7 @@ export default function VahanaRush() {
       if (state.dragActive && state.dragOrigin && state.dragCurrent) {
         const dx = state.dragCurrent.x - state.dragOrigin.x;
         const dy = state.dragCurrent.y - state.dragOrigin.y;
-        if (Math.hypot(dx, dy) >= 6) {
+        if (Math.hypot(dx, dy) >= 5) {
           state.bufferedDir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? "E" : "W") : (dy > 0 ? "S" : "N");
           state.bufferedTime = performance.now();
         }
@@ -676,11 +725,14 @@ export default function VahanaRush() {
       state.lastMovePt = null;
     };
 
+    // Wheel listener to prevent trackpad pinch-to-zoom during play
+    const handleWheel = (e) => {
+      if (e.ctrlKey) e.preventDefault();
+    };
+
     canvas.addEventListener('pointerdown', handlePointerDown);
-    canvas.addEventListener('pointermove', handlePointerMove);
-    window.addEventListener('pointermove', handlePointerMove);
-    canvas.addEventListener('pointerup', handlePointerUp);
-    canvas.addEventListener('pointercancel', handlePointerUp);
+    canvas.addEventListener('wheel', handleWheel, { passive: false });
+    window.addEventListener('pointermove', handlePointerMove, { passive: false });
     window.addEventListener('pointerup', handlePointerUp);
     window.addEventListener('pointercancel', handlePointerUp);
 
@@ -860,14 +912,10 @@ export default function VahanaRush() {
       }
 
       // Render
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      // Floor checkerboard
-      for (let r = 0; r < state.size; r++) {
-        for (let c = 0; c < state.size; c++) {
-          ctx.fillStyle = ((r + c) % 2 === 0) ? "#241108" : "#2a1409";
-          ctx.fillRect(c * CELL_PX, r * CELL_PX, CELL_PX, CELL_PX);
-        }
+      if (state.bgCanvas) {
+        ctx.drawImage(state.bgCanvas, 0, 0);
+      } else {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
 
       // Goal glow
@@ -882,23 +930,6 @@ export default function VahanaRush() {
       ctx.beginPath();
       ctx.arc(gx, gy, glowR, 0, Math.PI * 2);
       ctx.fill();
-
-      // Walls
-      ctx.strokeStyle = "#ffc94a";
-      ctx.lineWidth = 2.5;
-      ctx.lineCap = "round";
-      for (let r = 0; r < state.size; r++) {
-        for (let c = 0; c < state.size; c++) {
-          const cell = state.cells[r][c];
-          const x0 = c * CELL_PX, y0 = r * CELL_PX, x1 = x0 + CELL_PX, y1 = y0 + CELL_PX;
-          ctx.beginPath();
-          if (cell.walls.N) { ctx.moveTo(x0, y0); ctx.lineTo(x1, y0); }
-          if (cell.walls.W) { ctx.moveTo(x0, y0); ctx.lineTo(x0, y1); }
-          if (r === state.size - 1 && cell.walls.S) { ctx.moveTo(x0, y1); ctx.lineTo(x1, y1); }
-          if (c === state.size - 1 && cell.walls.E) { ctx.moveTo(x1, y0); ctx.lineTo(x1, y1); }
-          ctx.stroke();
-        }
-      }
 
       // Modaks
       ctx.font = (CELL_PX * 0.62) + "px sans-serif";
@@ -939,6 +970,8 @@ export default function VahanaRush() {
       window.removeEventListener('scroll', updateCanvasRect, true);
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('keyup', handleKeyUp);
+      canvas.removeEventListener('pointerdown', handlePointerDown);
+      canvas.removeEventListener('wheel', handleWheel);
       window.removeEventListener('pointermove', handlePointerMove);
       window.removeEventListener('pointerup', handlePointerUp);
       window.removeEventListener('pointercancel', handlePointerUp);
