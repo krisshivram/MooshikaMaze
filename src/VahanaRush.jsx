@@ -8,7 +8,7 @@ const LEVELS = [
   { key: "hard", name: "Grand Procession", subtitle: "Big, winding, and the cat means business.", stars: 3, size: 19, timer: 120, modaks: 30, playerStep: 115, catStep: 160, catMistake: 0.08 }
 ];
 
-const CELL_PX = 36;
+const CELL_PX = 44;
 const CATCH_DIST_FACTOR = 0.55;
 
 const DIR_VECTORS = {
