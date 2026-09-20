@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import './MooshikaMaze.css';
+import './VahanaRush.css';
 
 /* ================= Difficulty configuration ================= */
 const LEVELS = [
@@ -311,7 +311,7 @@ function drawGaneshaFace(ctx, cx, cy, r) {
 }
 
 /* ================= Main React Component ================= */
-export default function MooshikaMaze() {
+export default function VahanaRush() {
   const [screen, setScreen] = useState('start'); // 'start' | 'game' | 'results'
   const [currentLevelIdx, setCurrentLevelIdx] = useState(0);
   const [hud, setHud] = useState({ timeLeft: 100, modaks: 0, totalModaks: 12, levelName: "Maze", warn: false });
@@ -319,7 +319,7 @@ export default function MooshikaMaze() {
   const [results, setResults] = useState({ outcome: 'win', title: '', sub: '', icon: '🐭', grade: 'S', modaks: '0/0', timeBonus: 0, score: 0 });
   const [bestScores, setBestScores] = useState(() => {
     try {
-      return JSON.parse(localStorage.getItem('mooshika_best_scores') || '{}');
+      return JSON.parse(localStorage.getItem('vahana_best_scores') || localStorage.getItem('mooshika_best_scores') || '{}');
     } catch (e) {
       return {};
     }
@@ -454,7 +454,7 @@ export default function MooshikaMaze() {
       var curBest = prev[state.level.key];
       if (!curBest || score > curBest.score) {
         var updated = { ...prev, [state.level.key]: { score: score, grade: grade } };
-        try { localStorage.setItem('mooshika_best_scores', JSON.stringify(updated)); } catch (e) { }
+        try { localStorage.setItem('vahana_best_scores', JSON.stringify(updated)); } catch (e) { }
         return updated;
       }
       return prev;
@@ -946,7 +946,7 @@ export default function MooshikaMaze() {
   }, [screen, chooseBestDir, finishLevel, togglePause]);
 
   return (
-    <div className="mooshika-app">
+    <div className="vahana-app">
       {/* ============ START / LEVEL SELECT SCREEN ============ */}
       {screen === 'start' && (
         <section className="screen active" id="screen-start">

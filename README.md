@@ -31,8 +31,8 @@ mooshika-maze-project/
 └── src/
     ├── main.jsx            # React 19 root entry
     ├── App.jsx             # Top-level shell
-    ├── MooshikaMaze.jsx    # Standalone, self-contained game component
-    └── MooshikaMaze.css    # Responsive layout & temple design tokens
+    ├── VahanaRush.jsx      # Standalone, self-contained game component
+    └── VahanaRush.css      # Responsive layout & temple design tokens
 ```
 
 ---

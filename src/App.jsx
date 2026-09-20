@@ -1,10 +1,10 @@
 import React from 'react';
-import MooshikaMaze from './MooshikaMaze.jsx';
+import VahanaRush from './VahanaRush.jsx';
 
 export default function App() {
   return (
     <div className="app-container">
-      <MooshikaMaze />
+      <VahanaRush />
     </div>
   );
 }
