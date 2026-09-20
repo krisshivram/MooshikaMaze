@@ -1,4 +1,4 @@
-# 🐭 Mooshika Maze — Race to Ganesha (React JS)
+# 🐭 Vahana Rush — Race to Ganesha (React JS)
 
 A fast, responsive maze game built with **React 19** and **Vite 6** for the Vinayaka Chaturthi Game Design Contest.
 

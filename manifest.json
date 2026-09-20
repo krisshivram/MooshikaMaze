@@ -1,7 +1,7 @@
 {
-  "name": "Mooshika Maze — Race to Ganesha",
-  "short_name": "Mooshika Maze",
-  "description": "Guide Ganesha's mouse through the maze, collect modaks, dodge the cat, and reach Ganesha before time runs out.",
+  "name": "Vahana Rush — Race to Ganesha",
+  "short_name": "Vahana Rush",
+  "description": "Guide Ganesha's vahana through the maze, collect modaks, dodge the cat, and reach Ganesha before time runs out.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

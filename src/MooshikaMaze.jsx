@@ -952,8 +952,8 @@ export default function MooshikaMaze() {
         <section className="screen active" id="screen-start">
           <div className="hero">
             <div className="eyebrow"><span className="dot"></span> GANESH CHATURTHI GAME DESIGN CONTEST</div>
-            <h1>🐭 Mooshika Maze</h1>
-            <p className="tagline">Guide Ganesha's mount through the maze, gather modaks, dodge the cat, and reach Ganesha at the centre before the clock runs out.</p>
+            <h1>🐭 Vahana Rush</h1>
+            <p className="tagline">Guide Ganesha's vahana through the maze, gather modaks, dodge the cat, and reach Ganesha at the centre before the clock runs out.</p>
           </div>
 
           <div className="howto">
