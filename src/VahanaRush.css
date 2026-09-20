@@ -413,17 +413,73 @@ footer.note {
   color: var(--cream);
 }
 
+.hint-desktop {
+  display: inline;
+}
+
+.hint-mobile {
+  display: none;
+}
+
 /* ---------- Bigger Lower-Center Mobile D-Pad Controls ---------- */
+/* Hidden by default on laptops and desktops */
 .dpad-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  margin: 16px auto 6px;
-  user-select: none;
-  -webkit-user-select: none;
-  -webkit-touch-callout: none;
-  touch-action: none;
+  display: none !important;
+}
+
+/* Shown ONLY on mobile and tablet devices */
+@media (max-width: 768px), (pointer: coarse) and (max-width: 1024px) {
+  .dpad-container {
+    display: flex !important;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 14px auto 6px;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: none;
+  }
+
+  .hint-desktop {
+    display: none !important;
+  }
+
+  .hint-mobile {
+    display: inline !important;
+  }
+}
+
+/* Explicitly guarantee D-pad is hidden on laptop/desktop with mouse */
+@media (min-width: 769px) and (hover: hover) {
+  .dpad-container {
+    display: none !important;
+  }
+
+  .hint-desktop {
+    display: inline !important;
+  }
+
+  .hint-mobile {
+    display: none !important;
+  }
+}
+
+/* Laptop viewport height optimization to prevent vertical scrollbars */
+@media (min-width: 769px) and (max-height: 820px) {
+  #mazeCanvas {
+    max-width: min(480px, 60vh);
+  }
+  .hud {
+    padding: 6px 14px;
+    margin-bottom: 10px;
+  }
+  .stage-wrap {
+    padding: 8px;
+  }
+  .game-actions {
+    margin-top: 8px;
+  }
 }
 
 .dpad-grid {

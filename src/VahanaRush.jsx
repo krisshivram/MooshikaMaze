@@ -1109,7 +1109,8 @@ export default function VahanaRush() {
           </div>
 
           <div className="drag-hint">
-            👆 Use the big arrow buttons &nbsp;·&nbsp; touch & drag &nbsp;·&nbsp; or <span className="kbd">WASD</span>
+            <span className="hint-desktop">👆 Drag with mouse to steer &nbsp;·&nbsp; or use <span className="kbd">Arrow keys</span> / <span className="kbd">WASD</span></span>
+            <span className="hint-mobile">👆 Use the arrow buttons &nbsp;·&nbsp; or touch & drag</span>
           </div>
 
           <div className="game-actions">
